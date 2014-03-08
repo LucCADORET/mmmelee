@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Socket test</title>
+        <meta charset="utf-8"></meta>
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="javascripts/phaser.min.js"></script>
+		 
+    </head>
+	
+    <body>
+		<script type="text/javascript">
+		
+			var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example',{ preload: preload, create: create, update: update, render: render });
+
+			var socket;
+			var mario;
+			var p2;
+			var goomba;
+			var facing = "right";
+			var map;
+			var bg;
+			var layer;
+			var bullet;
+			var bullets;
+			var bulletTime = 0;
+			var firingTimer = 0;
+			var fireButton;
+			var userData = {
+				x:0,
+				y:0
+			};
+			
+			/* Cette fonction pré-charge les éléments à utiliser pour le jeu */
+
+			function preload() {
+
+				/* Définis le monde. Ne peut pas être plus petit que le Game. */
+				game.world.setBounds(0,0,1280, 600);
+
+				/* Chargement des niveaux */
+				// Fichier JSON
+				game.load.tilemap('mario','json/level1.json',null,Phaser.Tilemap.TILED_JSON);
+				// Tileset
+				game.load.image('tiles1','images/super_mario.png')
+
+				/* Chargement des images du jeu */
+				game.load.image('background', 'images/bkg.png');
+				game.load.spritesheet('mario_moves', 'images/mario.spritesheet_gun.png', 29, 28);
+				game.load.spritesheet('goomba', 'images/goomba.spritesheet.png',16,16);
+				game.load.image('bullet', 'images/bullet.png');
+				
+			}
+
+			/* Cette fonction "créé" le jeu, place les éléments etc. */
+
+			function create() {
+
+				// background images
+				bg = game.add.tileSprite(0, 0,1280,600, 'background');
+				bg.fixedToCamera = true;
+
+				map = game.add.tilemap('mario');
+
+				map.addTilesetImage('super_mario', 'tiles1');
+				
+				map.setCollisionBetween(15, 16);
+				map.setCollisionBetween(20, 25);
+				map.setCollisionBetween(27, 29);
+				map.setCollision(40);
+				
+				layer = map.createLayer('calque1');
+
+				layer.resizeWorld();
+				
+				//  Un-comment this on to see the collision tiles
+				//layer.debug = true;
+				
+				//  Our bullet group
+				bullets = game.add.group();
+				bullets.createMultiple(30, 'bullet');
+				bullets.setAll('anchor.x', 0.5);
+				bullets.setAll('anchor.y', 1);
+				bullets.setAll('outOfBoundsKill', true);
+				bullets.setAll('body.allowGravity',false);
+				
+				// Create a mario sprite as player.
+				mario = game.add.sprite(50, 50, 'mario_moves');
+				mario.anchor.setTo(0.5, 0.5);
+				
+				// Creation of the second player
+				p2 = game.add.sprite(50, 50, 'mario_moves');
+				p2.anchor.setTo(0.5, 0.5);
+				
+				// Creation of the goomba
+				// Create a mario sprite as player.
+				goomba = game.add.sprite(100, 100, 'goomba');
+				
+				//  Here we add a new animation called 'run'
+				//  We create an animation from the sprite sheet : add(name, frames, frameRate, loop, useNumericIndex) 
+				mario.animations.add('run_right',[1,2],10,true);
+				mario.animations.add('run_left',[4,5],10,true);
+				mario.animations.add('stand_right',[0],1,false);
+				mario.animations.add('stand_left',[3],1,false);
+				p2.animations.add('run_right',[1,2],10,true);
+				p2.animations.add('run_left',[4,5],10,true);
+				p2.animations.add('stand_right',[0],1,false);
+				p2.animations.add('stand_left',[3],1,false);
+				goomba.animations.add('walk',[0,1],10,false);
+
+				// Make the default camera follow the mario.
+				game.camera.follow(mario);
+
+				//  Stop the following keys from propagating up to the browser
+				game.input.keyboard.addKeyCapture([ Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.SPACEBAR ]);
+				fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+				
+				
+				// Définition de la gravité
+				game.physics.gravity.y = 1000;
+				
+				mario.body.bounce.y = 0.01;
+				// linearDamping is used to calculate friction on the body as it moves through the world. For example, this might be used to simulate air or water friction.
+				mario.body.linearDamping = 1;
+				mario.body.collideWorldBounds = true;
+				
+				
+				// On invoque socket.io DANS la méthode create, sinon il se lance avant et p2 n'existera pas déjà...
+				socket = io.connect();
+				
+				socket.on('connect', function () {
+				   p2.visible = true;
+
+				   socket.on('p2Connected', function () {
+						p2.visible = true;
+				   });
+				   
+				   socket.on('updatePositions',function(data){
+						p2.x = data.x;
+						p2.y = data.y;
+				   });
+				   
+				});
+
+			}
+
+			// Lorsque le P1 est connecté, on 
+				
+
+			function update() {
+
+				game.physics.collide(mario, layer);
+				game.physics.collide(goomba, layer);
+				game.physics.collide(bullets, layer);
+				game.physics.collide(p2, layer);
+
+				mario.body.velocity.x = 0;
+
+				goomba.animations.play('walk',10,true);
+
+				if (game.input.keyboard.isDown(Phaser.Keyboard.UP))
+				{
+					if (mario.body.onFloor())
+					{
+						mario.body.velocity.y = -500;
+					}
+				}
+
+				// Check key states every frame.
+				// Move ONLY one of the left and right key is hold.
+				if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT))
+				{
+					facing = "left";
+					mario.animations.play('run_left', 10, true);
+					mario.body.velocity.x = -300;
+				}
+				else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT))
+				{
+					//  And this starts the animation playing by using its key ("walk")
+					//  30 is the frame rate (30fps)
+					//  true means it will loop when it finishes
+					facing = "right";
+					mario.animations.play('run_right', 10, true);
+					mario.body.velocity.x = 300;
+				}
+				else
+				{
+					mario.animations.play('stand_'+facing,10,false);
+				}
+				
+				 //  Firing?
+				if (fireButton.isDown)
+				{
+					fireBullet();
+				}
+				
+				//  Run collision
+				game.physics.overlap(bullets, goomba, collisionHandler, null, this);
+				
+				bullets.forEach(function (bullet) {
+				  if (bullet.body.velocity.x == 0 && bullet.body.velocity.y == 0) {
+					bullet.kill();
+				  }
+				})
+				
+				userData.x = mario.x;
+				userData.y = mario.y;
+				// Tempête de broadcasts : n'émettre que s'il y a du changement !
+				socket.emit('move',userData);
+				
+			}
+
+			function render() {
+
+				game.debug.renderText('Hold left/right to move the ufo.');
+				//game.debug.renderCameraInfo(game.camera, 420, 320);
+				//game.debug.renderPhysicsBody(mario.body);
+
+			}
+
+			function fireBullet () {
+
+				//  To avoid them being allowed to fire too fast we set a time limit
+				if (game.time.now > bulletTime)
+				{
+					//  Grab the first bullet we can from the pool
+					bullet = bullets.getFirstExists(false);
+
+					if (bullet)
+					{
+						//  And fire it
+						bullet.reset(mario.x, mario.y + 8);
+						if(facing == "right") bullet.body.velocity.x = 1000;
+						else bullet.body.velocity.x = -1000;
+						bulletTime = game.time.now + 100;
+					}
+				}
+
+			}
+
+			function resetBullet (bullet) {
+				//  Called if the bullet goes out of the screen
+				bullet.kill();
+			}
+
+			function collisionHandler (bullet, goomba) {
+				//  When a bullet hits a goomba we kill them both
+				bullet.kill();
+				goomba.kill();
+			}
+			
+		</script>
+	</body>
+</html>

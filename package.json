@@ -1,0 +1,33 @@
+{
+  "name": "mmmelee",
+  "version": "0.0.0",
+  "description": "A 2D action multiplayer game",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@heroku.com:mmmelee.git"
+  },
+  "keywords": [
+    "node",
+    "javascript",
+    "phaser",
+    "action",
+    "game",
+    "2D",
+    "gun",
+    "fight",
+    "multiplayer"
+  ],
+  "author": "Luc CADORET",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "^0.9.16",
+    "express": "^3.5.0"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}
