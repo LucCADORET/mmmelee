@@ -43,4 +43,4 @@ io.sockets.on('connection', function (socket) {
 	});
 });
 
-server.listen(8888);
+server.listen(80);
