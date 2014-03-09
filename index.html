@@ -142,10 +142,7 @@
 				   
 				});
 
-			}
-
-			// Lorsque le P1 est connecté, on 
-				
+			}	
 
 			function update() {
 
@@ -203,10 +200,16 @@
 				  }
 				})
 				
-				userData.x = mario.x;
-				userData.y = mario.y;
-				// Tempête de broadcasts : n'émettre que s'il y a du changement !
-				socket.emit('move',userData);
+				/* Cette condition permet de n'émettre un broadcast seulement si la position de l'autre joueur a changé par
+					rapport à l'update précédente, permettant d'éviter les "tempêtes" de broadcast
+					On arrondit les positions x et y à deux décimales près, parce que sinon elles sont TOUJOURS différentes (bug de Phaser.js ?)
+				*/
+				if((userData.x.toFixed(2) != mario.x.toFixed(2)) || (userData.y.toFixed(2) != mario.y.toFixed(2)));
+				{
+					userData.x = mario.x;
+					userData.y = mario.y;
+					socket.emit('move',userData);
+				}
 				
 			}
 
