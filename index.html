@@ -91,6 +91,7 @@
 				// Creation of the second player
 				p2 = game.add.sprite(50, 50, 'mario_moves');
 				p2.anchor.setTo(0.5, 0.5);
+				p2.body.allowGravity = false;
 				
 				// Creation of the goomba
 				// Create a mario sprite as player.
@@ -149,7 +150,7 @@
 				game.physics.collide(mario, layer);
 				game.physics.collide(goomba, layer);
 				game.physics.collide(bullets, layer);
-				game.physics.collide(p2, layer);
+				//game.physics.collide(p2, layer);
 
 				mario.body.velocity.x = 0;
 
@@ -204,7 +205,7 @@
 					rapport à l'update précédente, permettant d'éviter les "tempêtes" de broadcast
 					On arrondit les positions x et y à deux décimales près, parce que sinon elles sont TOUJOURS différentes (bug de Phaser.js ?)
 				*/
-				if((userData.x.toFixed(2) != mario.x.toFixed(2)) || (userData.y.toFixed(2) != mario.y.toFixed(2)));
+				if((userData.x.toFixed(2) != mario.x.toFixed(2)) || (userData.y.toFixed(2) != mario.y.toFixed(2)))
 				{
 					userData.x = mario.x;
 					userData.y = mario.y;
