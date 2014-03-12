@@ -142,13 +142,15 @@
 				   socket.on('updatePositions',function(data){
 						p2.x = data.x;
 						p2.y = data.y;
-						if(data.standing = 0)
+
+						if(data.standing == 0)
 						{
+							/* Doesn't work ?? */
 							p2.animations.play('run_'+data.facing, 10, true);
 						}
-						else if (data.standing = 1);
+						else if (data.standing == 1);
 						{
-							p2.animations.play('stand_'+data.facing, 10, true);
+							p2.animations.play('stand_'+data.facing, 10, false);
 						}
 				   });
 				   
