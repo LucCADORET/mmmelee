@@ -1,6 +1,6 @@
 var express = require('express');
 var http = require('http');
-
+var port = process.env.PORT || 8888;
 var app = express();
 
 app.use(express.static(__dirname + '/public'));
@@ -13,6 +13,8 @@ app.get('/',function(req,res){
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 
+/* /!\ AVEC HEROKU, IL FAUT ACTIVER LES WEBSOCKET : heroku labs:enable websockets -a myapp */
+
 io.sockets.on('connection', function (socket) {
 
 	console.log('New client');
@@ -24,4 +26,4 @@ io.sockets.on('connection', function (socket) {
 });
 
 /* We have to let Heroku choose the port he wants to listen, hence the "process.env.PORT" */
-server.listen(process.env.PORT || 8888);
+server.listen(port);

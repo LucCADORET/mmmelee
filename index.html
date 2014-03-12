@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Socket test</title>
+        <title>MMMelee - Play live with your friends !</title>
         <meta charset="utf-8"></meta>
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 		<script type="text/javascript" src="javascripts/phaser.min.js"></script>
@@ -28,7 +28,10 @@
 			var fireButton;
 			var userData = {
 				x:0,
-				y:0
+				y:0,
+				facing:"right", // The direction where the player is looking
+				standing:1 // 1 if the player is standing, 0 if the player is moving/running
+				shooting:0 // 1 if the player is currently shooting, 0 if the player isn't
 			};
 			
 			/* Cette fonction pré-charge les éléments à utiliser pour le jeu */
@@ -139,6 +142,14 @@
 				   socket.on('updatePositions',function(data){
 						p2.x = data.x;
 						p2.y = data.y;
+						if(data.standing = 0)
+						{
+							p2.animations.play('run_'+data.facing, 10, true);
+						}
+						else if (data.standing = 1);
+						{
+							p2.animations.play('stand_'+data.facing, 10, true);
+						}
 				   });
 				   
 				});
@@ -153,6 +164,8 @@
 				//game.physics.collide(p2, layer);
 
 				mario.body.velocity.x = 0;
+
+				userData.standing = 0;
 
 				goomba.animations.play('walk',10,true);
 
@@ -184,6 +197,7 @@
 				else
 				{
 					mario.animations.play('stand_'+facing,10,false);
+					userData.standing = 1;
 				}
 				
 				 //  Firing?
@@ -200,6 +214,8 @@
 					bullet.kill();
 				  }
 				})
+
+				userData.facing = facing;
 				
 				/* Cette condition permet de n'émettre un broadcast seulement si la position de l'autre joueur a changé par
 					rapport à l'update précédente, permettant d'éviter les "tempêtes" de broadcast
@@ -216,7 +232,6 @@
 
 			function render() {
 
-				game.debug.renderText('Hold left/right to move the ufo.');
 				//game.debug.renderCameraInfo(game.camera, 420, 320);
 				//game.debug.renderPhysicsBody(mario.body);
 
