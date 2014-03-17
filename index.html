@@ -10,9 +10,10 @@
 	
     <body>
 		<script type="text/javascript">
-		
-			var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example',{ preload: preload, create: create, update: update, render: render });
 
+
+			var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example',{ preload: preload, create: create, update: update, render: render });
+			var textName; // Le texte qui s'affiche au dessus des personnagess
 			var socket;
 			var mario;
 			var p2;
@@ -27,12 +28,15 @@
 			var firingTimer = 0;
 			var fireButton;
 			var userData = {
+				name: "",
 				x:0,
 				y:0,
 				facing:"right", // The direction where the player is looking
 				standing:1, // 1 if the player is standing, 0 if the player is moving/running
 				shooting:0 // 1 if the player is currently shooting, 0 if the player isn't
 			};
+
+			userData.name = prompt("Pseudo :");
 			
 			/* Cette fonction pré-charge les éléments à utiliser pour le jeu */
 
@@ -115,6 +119,10 @@
 				// Make the default camera follow the mario.
 				game.camera.follow(mario);
 
+				// Le style de la police au dessus des personnages
+				var style = { font: "20 Arial", fill: "#ff0000", align: "center" };
+				textName = game.add.text(mario.body.x, mario.body.y - 20, userData.name, style);
+
 				//  Stop the following keys from propagating up to the browser
 				game.input.keyboard.addKeyCapture([ Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.SPACEBAR ]);
 				fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -134,8 +142,10 @@
 				
 				socket.on('connect', function () {
 				   p2.visible = true;
+				   
 
-				   socket.on('p2Connected', function () {
+
+				   socket.on('p2Connected', function (data) {
 						p2.visible = true;
 				   });
 				   
@@ -163,13 +173,14 @@
 				game.physics.collide(mario, layer);
 				game.physics.collide(goomba, layer);
 				game.physics.collide(bullets, layer);
-				//game.physics.collide(p2, layer);
 
 				mario.body.velocity.x = 0;
 
 				userData.standing = 0;
 
 				goomba.animations.play('walk',10,true);
+
+				showPlayerName();
 
 				if (game.input.keyboard.isDown(Phaser.Keyboard.UP))
 				{
@@ -269,7 +280,15 @@
 				bullet.kill();
 				goomba.kill();
 			}
-			
+
+			function showPlayerName()
+			{
+				textName.x = mario.body.x;
+				textName.y = mario.body.y - 25;
+			}
+
+			/* créer une classe clientPlayer et faire une nouvelle instantiation à chaque connexion d'un joueur ? */
+
 		</script>
 	</body>
 </html>

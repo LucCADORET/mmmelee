@@ -18,7 +18,7 @@ var io = require('socket.io').listen(server);
 io.sockets.on('connection', function (socket) {
 
 	console.log('New client');
-	socket.broadcast.emit('p2Connected');
+	socket.broadcast.emit('p2Connected',playerData);
 	
 	socket.on('move', function (playerData) {
 			socket.broadcast.emit('updatePositions',playerData);
