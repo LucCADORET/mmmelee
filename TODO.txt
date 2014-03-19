@@ -1,0 +1,11 @@
+- : to be done
+o : currently working on
+x : done
+
+- Fix the lag between the movemen of the other players and their name above
+x Change the color of the ennemies
+- Add a chat
+- Add life
+- Add collision between bullets and other players
+- Delete disconnected players
+- Make the animation "run" work on the other players
