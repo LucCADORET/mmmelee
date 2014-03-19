@@ -13,16 +13,53 @@ app.get('/',function(req,res){
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 
+var maxPlayers = 4; // The maximum number of players
+var nbPlayers = 0;
+var serverPlayers = [];
+function serverPlayer(name) {
+				this.name = name;
+				this.x = 0;
+				this.y = 0;
+				this.facing = "right";
+				this.stanging = 1;
+				this.shooting = 0;
+}
+
+
 /* /!\ AVEC HEROKU, IL FAUT ACTIVER LES WEBSOCKET : heroku labs:enable websockets -a myapp */
 
 io.sockets.on('connection', function (socket) {
-
-	console.log('New client');
-	socket.broadcast.emit('p2Connected',playerData);
+	if(nbPlayers >= maxPlayers)
+	{
+			console.log('Maximum number of players ('+maxPlayers+') is attained');
+	}
+	else
+	{
+		nbPlayers += 1;
+		
+		console.log('New client');
+		
+		/* This function creates the player on the server-side, plus send them to all the clients */
+		socket.on('newClient', function (playerData) {
+				// We tell to the new client who's already in game
+				socket.emit('playersInGame',serverPlayers);
+				// We add the new client to the list of players
+				serverPlayers.push(new serverPlayer(playerData.name));
+				socket.broadcast.emit('newPlayerInGame',playerData);
+		});
+		
+		socket.on('move', function (playerData) {
+				socket.broadcast.emit('updatePositions',playerData);
+		});
+		
+		socket.on('disconnect', function() {
+			console.log('Client disconnected');
+		
+			nbPlayers -= 1;
+	   });
+	}
 	
-	socket.on('move', function (playerData) {
-			socket.broadcast.emit('updatePositions',playerData);
-	});
+	
 });
 
 /* We have to let Heroku choose the port he wants to listen, hence the "process.env.PORT" */
