@@ -19,13 +19,14 @@ var io = require('socket.io').listen(server);
 var maxPlayers = 4; // The maximum number of players
 var nbPlayers = 0;
 var serverPlayers = [];
-function serverPlayer(name) {
-				this.name = name;
-				this.x = 0;
-				this.y = 0;
-				this.facing = "right";
-				this.stanging = 1;
-				this.shooting = 0;
+function serverPlayer(data) {
+	this.name = data.name;
+	this.x = data.x;
+	this.y = data.y;
+	this.facing = data.facing;
+	this.standing = data.standing;
+	this.shooting = data.shooting;
+	this.guid = data.guid;
 }
 
 
@@ -46,8 +47,10 @@ io.sockets.on('connection', function (socket) {
 		socket.on('newClient', function (playerData) {
 				// We tell to the new client who's already in game
 				socket.emit('playersInGame',serverPlayers);
+
 				// We add the new client to the list of players
-				serverPlayers.push(new serverPlayer(playerData.name));
+				serverPlayers.push(new serverPlayer(playerData));
+				//console.log(playerData);
 				socket.broadcast.emit('newPlayerInGame',playerData);
 		});
 		
