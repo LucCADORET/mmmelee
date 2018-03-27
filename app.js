@@ -3,6 +3,7 @@ var http = require('http');
 var port = process.env.PORT || 8888;
 var app = express();
 
+console.log("Configuring express server.");
 app.use(express.static(__dirname + '/public'));
 
 app.get('/',function(req,res){
@@ -10,7 +11,9 @@ app.get('/',function(req,res){
   res.sendfile(__dirname + '/index.html');
 });
 
+console.log("Starting express server");
 var server = http.createServer(app);
+console.log("Starting socket.io server");
 var io = require('socket.io').listen(server);
 
 var maxPlayers = 4; // The maximum number of players
@@ -63,4 +66,5 @@ io.sockets.on('connection', function (socket) {
 });
 
 /* We have to let Heroku choose the port he wants to listen, hence the "process.env.PORT" */
+console.log("Starting to listen on port "+port);
 server.listen(port);
