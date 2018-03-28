@@ -57,6 +57,10 @@ io.sockets.on('connection', function (socket) {
 		socket.on('move', function (playerData) {
 				socket.broadcast.emit('updatePositions',playerData);
 		});
+
+		socket.on('pingServer', function(timestamp) {
+			socket.emit('pingClient', timestamp);
+		});
 		
 		socket.on('disconnect', function() {
 			console.log('Client disconnected');

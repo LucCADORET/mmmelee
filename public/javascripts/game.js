@@ -39,6 +39,11 @@ function guid() {
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
+function getTimestamp(){
+	var timeStampInMs = window.performance && window.performance.now && window.performance.timing && window.performance.timing.navigationStart ? window.performance.now() + window.performance.timing.navigationStart : Date.now();
+	return timeStampInMs;
+}
+
 function client(name) {
 	this.name = name;
 	this.x = 0;
@@ -136,6 +141,8 @@ function create() {
 	let style = { font: "20 Arial", fill: "#ff0000", align: "center" };
 	textName = game.add.text(mario.body.x, mario.body.y - 20, userData.name, style);
 
+	let textPing = game.add.text(0, 0, "999 ms", style);
+
 	//  Stop the following keys from propagating up to the browser
 	game.input.keyboard.addKeyCapture([ Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.SPACEBAR ]);
 	fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -162,6 +169,12 @@ function create() {
 		/* When a new player arrives, we also create it's corresponding sprite */
 		socket.on('newPlayerInGame', function (data) {
 			clientPlayersView[data.guid] = createPlayer(data.name, style); 
+		});
+
+		socket.on('pingClient', function(timestamp){
+			let ping = getTimestamp() - timestamp;
+			textPing.setText(ping+' ms');
+
 		});
 
 		socket.on('updatePositions',function(data){
@@ -322,3 +335,10 @@ function collisionHandler (bullet, goomba) {
 	bullet.kill();
 	goomba.kill();
 }
+
+/* Periodic call to shot server ping */
+let intervalID = setInterval(
+	function(){
+		socket.emit('pingServer', getTimestamp());
+	}, 
+	2000);
