@@ -28,6 +28,6 @@
     "socket.io": "^2.0.4"
   },
   "engines": {
-    "node": "8.10.x"
+    "node": "0.10.x"
   }
 }
