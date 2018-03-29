@@ -71,7 +71,7 @@ function preload() {
 	game.load.spritesheet('mario_moves', 'images/mario.spritesheet_gun.png', 29, 28);
 	game.load.spritesheet('mario_alt_moves', 'images/mario_alt.spritesheet_gun.png', 29, 28);
 	game.load.spritesheet('goomba', 'images/goomba.spritesheet.png',16,16);
-	game.load.image('bullet', 'images/bullet.png');
+	game.load.image('bullet', 'images/bullet_big.png');
 
 }
 
@@ -130,7 +130,7 @@ function create() {
 	bullets = game.add.group();
 	bullets.enableBody = true;
 	bullets.physicsBodyType = Phaser.Physics.ARCADE;
-	bullets.createMultiple(30, 'bullet');
+	bullets.createMultiple(10, 'bullet');
 	bullets.setAll('anchor.x', 0.5);
 	bullets.setAll('anchor.y', 1);
 	bullets.setAll('outOfBoundsKill', true);
@@ -329,11 +329,14 @@ function fireBullet () {
 
 		if (bullet)
 		{
+			let side = 1;
+			if(facing == 'left'){
+				side = -1;
+			}
 			//  And fire it
-			bullet.reset(mario.x, mario.y + 8);
-			if(facing == "right") bullet.body.velocity.x = 1000;
-			else bullet.body.velocity.x = -1000;
-			bulletTime = game.time.now + 100;
+			bullet.reset(mario.x+(side*20), mario.y+15);
+			bullet.body.velocity.x = side*600;
+			bulletTime = game.time.now + 500;
 		}
 	}
 
