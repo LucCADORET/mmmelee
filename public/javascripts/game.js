@@ -177,6 +177,15 @@ function create() {
 
 		});
 
+		socket.on('playerLeft', function(data){
+			// TODO : delete player
+			let clientPlayerView = clientPlayersView[data.guid];	
+			clientPlayerView.nameText.kill();
+			clientPlayerView.kill();
+			delete clientPlayersView[data.guid];
+			console.log("Player disconnected: "+data.name);	
+		});
+
 		socket.on('updatePositions',function(data){
 			let clientPlayerView = clientPlayersView[data.guid];
 			clientPlayerView.x = data.x;
