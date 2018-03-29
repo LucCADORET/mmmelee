@@ -30,7 +30,19 @@ function serverPlayer(data, socketId) {
 	this.socketId = socketId;
 }
 
-function indexOfPlayer(socketId){
+function updateServerPlayerPosition(data){
+	for (let player of serverPlayers){
+		if(player.guid == data.guid){
+			player.x = data.x;
+			player.y = data.y;
+			player.facing = data.facing;
+			player.standing = data.standing;
+			player.shooting = data.shooting;
+		}
+	}
+}
+
+function indexOfPlayerBySocketId(socketId){
 	let i = 0;
 	for (let player of serverPlayers){
 		if(player.socketId == socketId){
@@ -68,7 +80,8 @@ io.sockets.on('connection', function (socket) {
 		});
 		
 		socket.on('move', function (playerData) {
-				socket.broadcast.emit('updatePositions',playerData);
+			updateServerPlayerPosition(playerData);		
+			socket.broadcast.emit('updatePositions',playerData);
 		});
 
 		socket.on('pingServer', function(timestamp) {
@@ -78,9 +91,9 @@ io.sockets.on('connection', function (socket) {
 		socket.on('disconnect', function(reason) {
 			console.log('Client disconnected');
 			console.log("Deconnection : "+socket.id);
-			let index = indexOfPlayer(socket.id);
+			let index = indexOfPlayerBySocketId(socket.id);
 			socket.broadcast.emit('playerLeft', serverPlayers[index]);
-			serverPlayers.splice(indexOfPlayer, 1);	
+			serverPlayers.splice(index, 1);	
 			// TODO : Perte de mémoire par objet non supprimé ?
 		});
 	}

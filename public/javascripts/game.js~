@@ -162,6 +162,7 @@ function create() {
 			for(let player of serverPlayer)
 			{
 				clientPlayersView[player.guid] = createPlayer(player.name, style);
+				updateClientPlayerView(player);
 			}
 
 		});
@@ -181,32 +182,36 @@ function create() {
 			// TODO : delete player
 			let clientPlayerView = clientPlayersView[data.guid];	
 			clientPlayerView.nameText.kill();
-			clientPlayerView.kill;
+			clientPlayerView.kill();
 			delete clientPlayersView[data.guid];
 			console.log("Player disconnected: "+data.name);	
 		});
 
 		socket.on('updatePositions',function(data){
-			let clientPlayerView = clientPlayersView[data.guid];
-			clientPlayerView.x = data.x;
-			clientPlayerView.y = data.y;
-			clientPlayerView.nameText.x = clientPlayerView.x;
-			clientPlayerView.nameText.y = clientPlayerView.y-25;
-			console.log("Facing:"+data.facing);
-
-			if(data.standing == 0)
-			{
-				clientPlayerView.animations.play('run_'+data.facing, 10, true);
-			}
-			else if (data.standing == 1);
-			{
-				clientPlayerView.animations.play('stand_'+data.facing, 10, false);
-			}
-		});
+			updateClientPlayerView(data);
+		});		
 
 	});
 
 }	
+
+function updateClientPlayerView(playerData){
+	let clientPlayerView = clientPlayersView[playerData.guid];
+	clientPlayerView.x = playerData.x;
+	clientPlayerView.y = playerData.y;
+	clientPlayerView.nameText.x = clientPlayerView.x;
+	clientPlayerView.nameText.y = clientPlayerView.y-25;
+	console.log("Facing:"+playerData.facing);
+
+	if(playerData.standing == 0)
+	{
+		clientPlayerView.animations.play('run_'+playerData.facing, 10, true);
+	}
+	else if (playerData.standing == 1);
+	{
+		clientPlayerView.animations.play('stand_'+playerData.facing, 10, false);
+	}
+}
 
 /*
  * Creates a new player visually : adds animation, body specs etc.
